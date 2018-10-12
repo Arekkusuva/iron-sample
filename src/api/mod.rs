@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use iron::prelude::*;
 use iron::Handler;
 use iron::status;
+use iron::{AfterMiddleware, BeforeMiddleware, typemap};
+use time::precise_time_ns;
 
 /// Router contains addresses associated with handlers.
 struct Router {
@@ -16,9 +18,7 @@ impl Router {
         }
     }
 
-    fn add_route<H>(&mut self, path: String, handler: H)
-        where H: Handler
-    {
+    fn add_route<H: Handler>(&mut self, path: String, handler: H) {
         self.routes.insert(path, Box::new(handler));
     }
 }
@@ -32,6 +32,25 @@ impl Handler for Router {
     }
 }
 
+struct ResponseTime;
+
+impl typemap::Key for ResponseTime { type Value = u64; }
+
+impl BeforeMiddleware for ResponseTime {
+    fn before(&self, req: &mut Request) -> IronResult<()> {
+        req.extensions.insert::<ResponseTime>(precise_time_ns());
+        Ok(())
+    }
+}
+
+impl AfterMiddleware for ResponseTime {
+    fn after(&self, req: &mut Request, res: Response) -> IronResult<Response> {
+        let delta = precise_time_ns() - *req.extensions.get::<ResponseTime>().unwrap();
+        println!("Request took: {} ms", (delta as f64) / 1000000.0);
+        Ok(res)
+    }
+}
+
 pub fn start_listening(port: i32) {
     let mut router = Router::new();
 
@@ -39,5 +58,9 @@ pub fn start_listening(port: i32) {
         Ok(Response::with((status::Ok, "Hello World!")))
     });
 
-    Iron::new(router).http(format!("localhost:{}", port)).expect("http");
+    let mut chain = Chain::new(router);
+    chain.link_before(ResponseTime);
+    chain.link_after(ResponseTime);
+
+    Iron::new(chain).http(format!("localhost:{}", port)).expect("http");
 }
