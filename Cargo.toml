@@ -1,0 +1,9 @@
+[package]
+name = "web_sample"
+version = "0.1.0"
+authors = ["Vuraddo <vuraddo@yahoo.com>"]
+
+[dependencies]
+
+[dependencies.iron]
+version = "0.6"
