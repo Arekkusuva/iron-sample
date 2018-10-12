@@ -6,20 +6,34 @@ use iron::status;
 use iron::{AfterMiddleware, BeforeMiddleware, typemap};
 use time::precise_time_ns;
 
-/// Router contains addresses associated with handlers.
-struct Router {
+mod controllers;
+use self::controllers::Engage;
+
+// TODO: Add context.
+/// Router contains endpoints associated with handlers.
+pub struct Router {
     routes: HashMap<String, Box<Handler>>,
 }
 
 impl Router {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Router {
             routes: HashMap::new(),
         }
     }
 
-    fn add_route<H: Handler>(&mut self, path: String, handler: H) {
-        self.routes.insert(path, Box::new(handler));
+    pub fn add_route<P, H>(&mut self, path: P, handler: H)
+        where P: Into<String>,
+              H: Fn(&mut Request) -> IronResult<Response> + Send + Sync + 'static,
+    {
+        self.add(path, move |req: &mut Request| { handler(req) });
+    }
+
+    fn add<P, H>(&mut self, path: P, handler: H)
+        where P: Into<String>,
+              H: Handler,
+    {
+        self.routes.insert(path.into(), Box::new(handler));
     }
 }
 
@@ -51,12 +65,25 @@ impl AfterMiddleware for ResponseTime {
     }
 }
 
-pub fn start_listening(port: i32) {
-    let mut router = Router::new();
+#[allow(dead_code)]
+#[derive(Default)]
+struct Context {
+    id: i64,
+}
 
-    router.add_route("hello".to_string(), |_: &mut Request| {
-        Ok(Response::with((status::Ok, "Hello World!")))
-    });
+#[allow(dead_code)]
+impl Context {
+    fn new() -> Self {
+        Context::default()
+    }
+
+    fn set_id(&mut self, id: i64) {
+        self.id = id;
+    }
+}
+
+pub fn start_listening(port: i32) {
+    let router= Router::new().engage();
 
     let mut chain = Chain::new(router);
     chain.link_before(ResponseTime);
