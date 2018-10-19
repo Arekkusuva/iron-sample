@@ -12,5 +12,3 @@ A REST API sample for application with Rust.
 - [ ] Authentication.
 - [ ] DB - PostgreSQL + migrations.
 - [ ] GraphQL (branch).
-
-

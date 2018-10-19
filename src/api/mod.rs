@@ -5,9 +5,13 @@ use iron::Handler;
 use iron::status;
 use iron::{AfterMiddleware, BeforeMiddleware, typemap};
 use time::precise_time_ns;
+use slog::Logger;
 
+use super::utils::logger::logger_factory;
 mod controllers;
 use self::controllers::Engage;
+mod middlewares;
+use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
 
 // TODO: Add context.
 /// Router contains endpoints associated with handlers.
@@ -46,48 +50,36 @@ impl Handler for Router {
     }
 }
 
-struct ResponseTime;
-
-impl typemap::Key for ResponseTime { type Value = u64; }
-
-impl BeforeMiddleware for ResponseTime {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        req.extensions.insert::<ResponseTime>(precise_time_ns());
-        Ok(())
-    }
-}
-
-impl AfterMiddleware for ResponseTime {
-    fn after(&self, req: &mut Request, res: Response) -> IronResult<Response> {
-        let delta = precise_time_ns() - *req.extensions.get::<ResponseTime>().unwrap();
-        println!("Request took: {} ms", (delta as f64) / 1000000.0);
-        Ok(res)
-    }
-}
-
-#[allow(dead_code)]
-#[derive(Default)]
-struct Context {
-    id: i64,
-}
-
-#[allow(dead_code)]
-impl Context {
-    fn new() -> Self {
-        Context::default()
-    }
-
-    fn set_id(&mut self, id: i64) {
-        self.id = id;
-    }
-}
+//#[allow(dead_code)]
+//#[derive(Default)]
+//struct Context {
+//    id: i64,
+//}
+//
+//#[allow(dead_code)]
+//impl Context {
+//    fn new() -> Self {
+//        Context::default()
+//    }
+//
+//    fn set_id(&mut self, id: i64) {
+//        self.id = id;
+//    }
+//}
 
 pub fn start_listening(port: i32) {
-    let router= Router::new().engage();
+    let logger = logger_factory();
 
+    let router= Router::new().engage();
     let mut chain = Chain::new(router);
-    chain.link_before(ResponseTime);
-    chain.link_after(ResponseTime);
+
+    // Logger
+    let logger_middleware = LoggerMiddleware::new(&logger);
+    chain.link_before(logger_middleware);
+
+    // Response time logger
+    chain.link_before(ResponseTimeLoggerMiddleware);
+    chain.link_after(ResponseTimeLoggerMiddleware);
 
     Iron::new(chain).http(format!("localhost:{}", port)).expect("http");
 }
