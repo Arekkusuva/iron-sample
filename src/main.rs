@@ -6,6 +6,12 @@ extern crate diesel;
 extern crate slog;
 extern crate slog_json;
 extern crate slog_term;
+extern crate bodyparser;
+extern crate persistent;
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 
 mod api;
 mod db;
