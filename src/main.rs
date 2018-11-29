@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 extern crate iron;
 extern crate time;
 #[macro_use]

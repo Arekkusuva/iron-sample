@@ -1,14 +1,8 @@
 use std::collections::HashMap;
-use std::collections::hash_map::Entry;
 
 use iron::prelude::*;
 use iron::Handler;
 use iron::status;
-use iron::{AfterMiddleware, BeforeMiddleware, typemap};
-use time::precise_time_ns;
-use slog::Logger;
-use persistent;
-use bodyparser;
 
 use super::utils::logger::logger_factory;
 mod controllers;
@@ -42,7 +36,7 @@ impl Router {
               M: Into<String>,
               H: Handler,
     {
-        let mut key = Router::get_full_path(path, method);
+        let key = Router::get_full_path(path, method);
         self.routes.insert(key, Box::new(handler));
     }
 

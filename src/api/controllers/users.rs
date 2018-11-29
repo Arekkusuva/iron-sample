@@ -4,7 +4,6 @@ use iron::prelude::*;
 use iron::status;
 use super::super::Router;
 
-use api::deserializer::{ParseErrorKind};
 use api::deserializer::users::{PostUser};
 
 fn post_user(req: &mut Request) -> IronResult<Response> {

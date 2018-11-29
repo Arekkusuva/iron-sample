@@ -1,4 +1,3 @@
-use slog::Logger;
 use iron::{typemap, BeforeMiddleware, AfterMiddleware};
 use iron::prelude::*;
 use time::precise_time_ns;

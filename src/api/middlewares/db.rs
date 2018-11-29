@@ -1,7 +1,7 @@
 use std::env;
 
 use diesel::pg::PgConnection;
-use diesel::r2d2::{self, PooledConnection, ConnectionManager, Pool};
+use diesel::r2d2::{PooledConnection, ConnectionManager, Pool};
 use slog::Logger;
 use iron::{typemap, BeforeMiddleware};
 use iron::prelude::*;
