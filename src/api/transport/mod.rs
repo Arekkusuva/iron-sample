@@ -1,14 +1,16 @@
 use std::error::Error;
 use std::fmt;
 use std::result::Result as StdResult;
+use iron::prelude::{Request};
 
+pub mod prelude;
 pub mod users;
 
 type Result<T> = StdResult<T, ParseError>;
 
 #[derive(Debug, Clone)]
 pub struct ParseError {
-    kind: ParseErrorKind
+    pub kind: ParseErrorKind
 }
 
 #[derive(Debug, Clone)]
@@ -18,7 +20,7 @@ pub enum ParseErrorKind {
 }
 
 impl ParseError {
-    fn new(kind: ParseErrorKind) -> ParseError {
+    pub fn new(kind: ParseErrorKind) -> ParseError {
         ParseError { kind }
     }
 }

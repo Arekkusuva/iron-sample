@@ -30,7 +30,7 @@ pub trait LoggerReqExt {
     fn get_logger(&self) -> Logger;
 }
 
-impl <'a, 'b>LoggerReqExt for Request <'a, 'b> {
+impl<'a, 'b>LoggerReqExt for Request<'a, 'b> {
     fn get_logger(&self) -> Logger {
         let &Value(ref logger) = self.extensions.get::<LoggerMiddleware>().expect("Failed to get logger");
 

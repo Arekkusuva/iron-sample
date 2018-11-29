@@ -3,15 +3,14 @@ use std::error::Error;
 use iron::prelude::*;
 use iron::status;
 use super::super::Router;
-
-use api::deserializer::users::{PostUser};
+use api::transport::prelude::*;
+use api::transport::users::{PostUser};
 
 fn post_user(req: &mut Request) -> IronResult<Response> {
-    let body = match PostUser::parse_and_validate(req) {
+    let body: PostUser = match req.parse_body() {
         Ok(body) => body,
         Err(err) => return Ok(Response::with((status::BadRequest, err.description()))),
     };
-
     Ok(Response::with((status::Ok, body.name)))
 }
 

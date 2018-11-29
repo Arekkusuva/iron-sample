@@ -9,7 +9,7 @@ mod controllers;
 use self::controllers::Engage;
 mod middlewares;
 use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
-mod deserializer;
+mod transport;
 
 // TODO: Add context.
 /// Router contains endpoints associated with handlers.
@@ -65,23 +65,6 @@ impl Handler for Router {
     }
 }
 
-//#[allow(dead_code)]
-//#[derive(Default)]
-//struct Context {
-//    id: i64,
-//}
-//
-//#[allow(dead_code)]
-//impl Context {
-//    fn new() -> Self {
-//        Context::default()
-//    }
-//
-//    fn set_id(&mut self, id: i64) {
-//        self.id = id;
-//    }
-//}
-
 const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 pub fn start_listening(port: i32) {
@@ -98,6 +81,9 @@ pub fn start_listening(port: i32) {
     // Logger
     let logger_middleware = LoggerMiddleware::new(&logger);
     chain.link_before(logger_middleware);
+
+    // Json response serializer
+    chain.link_after(iron_json_response::JsonResponseMiddleware::new());
 
     // Response time logging middleware
     chain.link_before(ResponseTimeLoggerMiddleware);

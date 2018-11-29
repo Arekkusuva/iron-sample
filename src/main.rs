@@ -14,6 +14,7 @@ extern crate serde;
 extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
+extern crate iron_json_response;
 
 mod api;
 mod db;
