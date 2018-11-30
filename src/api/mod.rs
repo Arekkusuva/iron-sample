@@ -75,17 +75,11 @@ pub fn start_listening(port: i32) {
     let router= Router::new().engage();
     let mut chain = Chain::new(router);
 
-    // Body limit
+    // Link middlewares
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
-
-    // Logger
     let logger_middleware = LoggerMiddleware::new(&logger);
     chain.link_before(logger_middleware);
-
-    // Json response serializer
     chain.link_after(iron_json_response::JsonResponseMiddleware::new());
-
-    // Response time logging middleware
     chain.link_before(ResponseTimeLoggerMiddleware);
     chain.link_after(ResponseTimeLoggerMiddleware);
 
