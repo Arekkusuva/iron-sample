@@ -11,7 +11,7 @@ fn post_user(req: &mut Request) -> IronResult<Response> {
         Ok(body) => body,
         Err(err) => return Ok(Response::with((status::BadRequest, err.description()))),
     };
-    Ok(Response::with((status::Ok, body.name)))
+    Ok(Response::with((status::Ok, body.email)))
 }
 
 fn get_users(_: &mut Request) -> IronResult<Response> {

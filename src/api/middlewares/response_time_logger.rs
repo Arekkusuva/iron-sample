@@ -1,5 +1,6 @@
 use iron::{typemap, BeforeMiddleware, AfterMiddleware};
 use iron::prelude::*;
+use iron::status;
 use time::precise_time_ns;
 use api::middlewares::logger::LoggerReqExt;
 
@@ -18,7 +19,7 @@ impl AfterMiddleware for ResponseTimeLoggerMiddleware {
     fn after(&self, req: &mut Request, res: Response) -> IronResult<Response> {
         let delta = precise_time_ns() - *req.extensions.get::<ResponseTimeLoggerMiddleware>().unwrap();
         let logger = req.get_logger();
-        info!(logger, "Request took: {} ms", delta as f64 / 1000000.0);
+        info!(logger, "Request with response status: {}, took: {}", res.status.unwrap_or(status::NotFound), delta as f64 / 1000000.0);
         Ok(res)
     }
 }

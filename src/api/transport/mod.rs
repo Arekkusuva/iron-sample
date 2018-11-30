@@ -5,6 +5,7 @@ use std::result::Result as StdResult;
 use iron::prelude::{Request, Plugin};
 use serde::Deserialize;
 use bodyparser::Struct;
+use validator::Validate;
 
 pub mod prelude;
 pub mod users;
@@ -37,7 +38,7 @@ impl fmt::Display for ParseError {
 impl Error for ParseError {
     fn description(&self) -> &str {
         match self.kind {
-            ParseErrorKind::WrongData => "failed to parse data",
+            ParseErrorKind::WrongData => "invalid data",
             ParseErrorKind::NotValid(ref err_msg) => err_msg,
         }
     }
@@ -45,15 +46,18 @@ impl Error for ParseError {
 
 pub trait BodyParser {
     fn parse_body<T>(&mut self) -> Result<T>
-        where T: for<'c> Deserialize<'c> + Clone + 'static;
+        where T: for<'c> Deserialize<'c> + Clone + Validate + 'static;
 }
 
 impl<'a, 'b> BodyParser for Request<'a, 'b> {
     fn parse_body<T>(&mut self) -> Result<T>
-        where T: for<'c> Deserialize<'c> + Clone + 'static,
+        where T: for<'c> Deserialize<'c> + Clone + Validate + 'static,
     {
         match self.get::<Struct<T>>() {
-            Ok(Some(body)) => Ok(body),
+            Ok(Some(body)) => match body.validate() {
+                Ok(_) => Ok(body),
+                Err(err) => Err(ParseError::new(ParseErrorKind::NotValid(err.description().to_string()))),
+            },
             Ok(None) => Err(ParseError::new(ParseErrorKind::WrongData)),
             Err(_) => Err(ParseError::new(ParseErrorKind::WrongData)),
         }

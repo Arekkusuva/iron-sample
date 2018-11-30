@@ -1,7 +1,10 @@
 use iron::prelude::*;
+use validator::Validate;
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Validate, Deserialize)]
 pub struct PostUser {
-    pub name: String,
+    #[validate(email)]
+    pub email: String,
+    #[validate(length(min = "7"))]
     pub password: String,
 }
