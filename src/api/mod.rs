@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use iron::prelude::*;
 use iron::Handler;
 use iron::status;
+use ijr::{JsonResponseMiddleware};
 
 use super::utils::logger::logger_factory;
 mod controllers;
@@ -10,6 +11,7 @@ use self::controllers::Engage;
 mod middlewares;
 use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
 mod transport;
+mod utils;
 
 // TODO: Add context.
 /// Router contains endpoints associated with handlers.
@@ -79,7 +81,7 @@ pub fn start_listening(port: i32) {
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
     let logger_middleware = LoggerMiddleware::new(&logger);
     chain.link_before(logger_middleware);
-    chain.link_after(iron_json_response::JsonResponseMiddleware::new());
+    chain.link_after(JsonResponseMiddleware::new());
     chain.link_before(ResponseTimeLoggerMiddleware);
     chain.link_after(ResponseTimeLoggerMiddleware);
 

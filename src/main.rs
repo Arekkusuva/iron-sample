@@ -11,13 +11,14 @@ extern crate slog_term;
 extern crate bodyparser;
 extern crate persistent;
 extern crate serde;
+#[macro_use]
 extern crate serde_json;
 #[macro_use]
 extern crate validator_derive;
 extern crate validator;
 #[macro_use]
 extern crate serde_derive;
-extern crate iron_json_response;
+extern crate iron_json_response as ijr;
 
 mod api;
 mod db;
