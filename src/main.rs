@@ -22,6 +22,7 @@ extern crate iron_json_response as ijr;
 
 mod api;
 mod db;
+mod store;
 mod utils;
 
 const PORT: i32 = 8000;

@@ -2,13 +2,10 @@ use iron::prelude::*;
 use iron::{typemap, BeforeMiddleware, Handler};
 use slog::Logger;
 
-pub trait SessionStore {
-    fn get(&self, key: &str) -> Option<String>;
-    fn set(&self, key: &str, value: String) -> Result<(), ()>;
-}
+use store::Store;
 
 pub trait SessionBackend: Send + Sync + 'static {
-    type Store: SessionStore;
+    type Store: Store;
 
     fn get_store_from_request(&self, request: &mut Request) -> Self::Store;
 }
@@ -24,12 +21,12 @@ impl<S: SessionBackend> SessionsMiddleware<S> {
 }
 
 pub struct Session {
-    inner: Box<SessionStore>,
+    inner: Box<Store>,
     has_changed: bool,
 }
 
 impl Session {
-    fn new(s: Box<SessionStore>) -> Self {
+    fn new(s: Box<Store>) -> Self {
         Session {
             inner: s,
             has_changed: false,
