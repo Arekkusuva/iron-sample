@@ -1,3 +1,5 @@
+pub mod prelude;
+
 mod logger;
 mod response_time_logger;
 mod db;

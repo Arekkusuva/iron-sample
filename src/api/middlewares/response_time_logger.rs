@@ -1,7 +1,7 @@
-use iron::{typemap, BeforeMiddleware, AfterMiddleware};
 use iron::prelude::*;
-use iron::status;
+use iron::{status, typemap, BeforeMiddleware, AfterMiddleware};
 use time::precise_time_ns;
+
 use api::middlewares::logger::LoggerReqExt;
 
 pub struct ResponseTimeLoggerMiddleware;

@@ -1,4 +1,4 @@
-use super::Router;
+use api::Router;
 
 mod users;
 

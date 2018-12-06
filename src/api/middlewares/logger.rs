@@ -1,6 +1,6 @@
-use slog::Logger;
-use iron::{typemap, BeforeMiddleware};
 use iron::prelude::*;
+use iron::{typemap, BeforeMiddleware};
+use slog::Logger;
 
 pub struct LoggerMiddleware {
     pub logger: Logger,

@@ -5,13 +5,15 @@ use iron::Handler;
 use iron::status;
 use ijr::{JsonResponseMiddleware};
 
-use super::utils::logger::logger_factory;
+use utils::logger::logger_factory;
+
 mod controllers;
-use self::controllers::Engage;
 mod middlewares;
-use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
 mod transport;
 mod utils;
+
+use self::controllers::Engage;
+use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
 
 // TODO: Add context.
 /// Router contains endpoints associated with handlers.

@@ -1,10 +1,10 @@
 use std::env;
 
+use iron::prelude::*;
+use iron::{typemap, BeforeMiddleware};
 use diesel::pg::PgConnection;
 use diesel::r2d2::{PooledConnection, ConnectionManager, Pool};
 use slog::Logger;
-use iron::{typemap, BeforeMiddleware};
-use iron::prelude::*;
 
 pub type DBConnection = PooledConnection<ConnectionManager<PgConnection>>;
 pub type DBPool = Pool<ConnectionManager<PgConnection>>;

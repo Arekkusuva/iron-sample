@@ -1,7 +1,9 @@
 use iron::prelude::*;
 use iron::status;
-use super::super::Router;
+
 use api::transport::prelude::*;
+//use api::middlewares::prelude::*;
+use api::Router;
 use api::transport::users::{PostUser};
 
 fn post_user(req: &mut Request) -> IronResult<Response> {
