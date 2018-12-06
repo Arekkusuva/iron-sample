@@ -28,9 +28,7 @@ pub struct ResponseBody {
 }
 
 impl ResponseBody {
-    pub fn with_data<T>(resp_status: status::Status, data: T) -> ResponseBody
-        where T: Serialize,
-    {
+    pub fn with_data<T: Serialize>(resp_status: status::Status, data: T) -> ResponseBody {
         ResponseBody {
             resp_status,
             error: None,
