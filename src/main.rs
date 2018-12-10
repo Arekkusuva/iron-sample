@@ -19,10 +19,10 @@ extern crate validator;
 #[macro_use]
 extern crate serde_derive;
 extern crate iron_json_response as ijr;
+extern crate r2d2_redis;
 
 mod api;
 mod db;
-mod store;
 mod utils;
 
 const PORT: i32 = 8000;
