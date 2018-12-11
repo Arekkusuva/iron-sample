@@ -3,8 +3,10 @@ use r2d2_redis::redis::{Commands};
 
 use super::SessionStore;
 
+pub type RedisPool = r2d2::Pool<RedisConnectionManager>;
+
 pub struct RedisSessionStore {
-    pool: r2d2::Pool<RedisConnectionManager>,
+    pool: RedisPool,
 }
 
 impl RedisSessionStore {
@@ -21,12 +23,12 @@ impl RedisSessionStore {
 }
 
 impl SessionStore for RedisSessionStore {
-    fn set_string(&self, key: &str, value: String) {
+    fn set_raw(&self, key: &str, value: String) {
         let conn = self.pool.get().unwrap();
         let _: () = conn.set(key, value).unwrap();
     }
 
-    fn get_string(&self, key: &str) -> Option<String> {
+    fn get_raw(&self, key: &str) -> Option<String> {
         let conn = self.pool.get().unwrap();
         conn.get(key).unwrap()
     }

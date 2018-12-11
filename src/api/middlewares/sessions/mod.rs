@@ -2,13 +2,10 @@ use iron::prelude::*;
 use iron::{typemap, BeforeMiddleware, Handler};
 use slog::Logger;
 
-pub mod jwt;
-mod redis;
+pub mod backends;
+mod stores;
 
-pub trait SessionStore {
-    fn set_string(&self, key: &str, value: String);
-    fn get_string(&self, key: &str) -> Option<String>;
-}
+use self::stores::SessionStore;
 
 pub trait SessionBackend: Send + Sync + 'static {
     type Store: SessionStore;
@@ -43,6 +40,7 @@ impl Session {
 struct SessionKey;
 impl typemap::Key for SessionKey { type Value = Session; }
 
+// TODO: Use AroundMiddleware
 impl<S: SessionBackend> BeforeMiddleware for SessionsMiddleware<S> {
     fn before(&self, req: &mut Request) -> IronResult<()> {
         let s = self.backend.get_store_from_request(req);
