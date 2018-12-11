@@ -2,10 +2,10 @@ use std::error::Error;
 use std::fmt;
 use std::result::Result as StdResult;
 use std::collections::HashMap;
-use std::convert::Into;
+use std::convert::{Into, From};
 
 use iron::prelude::*;
-use iron::status;
+use iron::{typemap, status};
 use serde::{Deserialize, Serialize};
 use bodyparser::Struct;
 use serde_json::Value;
@@ -17,7 +17,7 @@ use api::utils;
 pub mod prelude;
 pub mod users;
 
-type Result<T> = StdResult<T, RequestError>;
+pub type Result<T> = StdResult<T, RequestError>;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct ResponseBody {
@@ -25,6 +25,7 @@ pub struct ResponseBody {
     pub resp_status: status::Status,
     pub error: Option<&'static str>,
     pub data: Option<Box<Value>>,
+    pub internal_code: Option<u8>,
 }
 
 impl ResponseBody {
@@ -33,6 +34,7 @@ impl ResponseBody {
             resp_status,
             error: None,
             data: Some(Box::new(json!(data))),
+            internal_code: None,
         }
     }
 
@@ -43,6 +45,7 @@ impl ResponseBody {
                     resp_status: status::BadRequest,
                     error: Some("wrong_data"),
                     data: None,
+                    internal_code: None,
                 }
             },
             RequestErrorKind::NotValid(e) => {
@@ -58,17 +61,34 @@ impl ResponseBody {
                     resp_status: status::BadRequest,
                     error: Some("validation_failed"),
                     data: Some(Box::new(json!(not_valid_fields))),
+                    internal_code: None,
                 }
             },
+            RequestErrorKind::Unauthorized => {
+                ResponseBody {
+                    resp_status: status::Unauthorized,
+                    error: status::Unauthorized.canonical_reason(),
+                    data: None,
+                    internal_code: None,
+                }
+            },
+            RequestErrorKind::InternalError(e) => {
+                ResponseBody {
+                    resp_status: status::InternalServerError,
+                    error: status::InternalServerError.canonical_reason(),
+                    data: None,
+                    internal_code: Some(e as u8),
+                }
+            }
         }
     }
 }
 
-impl Into<Response> for ResponseBody {
-    fn into(self) -> Response {
+impl From<ResponseBody> for Response {
+    fn from(body: ResponseBody) -> Response {
         let mut resp = Response::new();
-        resp.set_mut(self.resp_status)
-            .set_mut(JsonResponse::json(self));
+        resp.set_mut(body.resp_status)
+            .set_mut(JsonResponse::json(body));
         resp
     }
 }
@@ -82,6 +102,13 @@ pub struct RequestError {
 pub enum RequestErrorKind {
     WrongData,
     NotValid(Box<ValidationErrors>),
+    Unauthorized,
+    InternalError(RequestInternalErrorKind),
+}
+
+#[derive(Debug, Clone)]
+pub enum RequestInternalErrorKind {
+    SessionsStore
 }
 
 impl RequestError {
@@ -89,6 +116,8 @@ impl RequestError {
         RequestError { kind }
     }
 }
+
+impl typemap::Key for RequestError { type Value = RequestError; }
 
 impl fmt::Display for RequestError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -101,13 +130,15 @@ impl Error for RequestError {
         match self.kind {
             RequestErrorKind::WrongData => "Parsing failed",
             RequestErrorKind::NotValid(_) => "Validation failed",
+            RequestErrorKind::Unauthorized => "Unauthorized",
+            RequestErrorKind::InternalError(_) => "Internal error",
         }
     }
 }
 
-impl Into<Response> for RequestError {
-    fn into(self) -> Response {
-        let resp_body = ResponseBody::with_error(self);
+impl From<RequestError> for Response {
+    fn from(err: RequestError) -> Response {
+        let resp_body = ResponseBody::with_error(err);
         resp_body.into()
     }
 }

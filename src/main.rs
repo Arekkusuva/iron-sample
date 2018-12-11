@@ -20,6 +20,7 @@ extern crate validator;
 extern crate serde_derive;
 extern crate iron_json_response as ijr;
 extern crate r2d2_redis;
+extern crate jsonwebtoken as jwt;
 
 mod api;
 mod db;

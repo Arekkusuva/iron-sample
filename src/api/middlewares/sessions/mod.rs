@@ -1,6 +1,7 @@
 use iron::prelude::*;
-use iron::{typemap, BeforeMiddleware, Handler};
-use slog::Logger;
+use iron::{typemap, AroundMiddleware, Handler};
+
+use api::transport::{Result, RequestError, RequestErrorKind, RequestInternalErrorKind};
 
 pub mod backends;
 mod stores;
@@ -10,7 +11,7 @@ use self::stores::SessionStore;
 pub trait SessionBackend: Send + Sync + 'static {
     type Store: SessionStore;
 
-    fn get_store_from_request(&self, request: &mut Request) -> Self::Store;
+    fn get_store_from_request(&self, request: &mut Request) -> Result<Self::Store>;
 }
 
 pub struct SessionsMiddleware<S: SessionBackend> {
@@ -25,14 +26,29 @@ impl<S: SessionBackend> SessionsMiddleware<S> {
 
 pub struct Session {
     inner: Box<SessionStore>,
-    has_changed: bool,
+}
+
+pub trait SessionValue: Sized + 'static {
+    fn get_key() -> &'static str;
+    fn into_raw(self) -> String;
+    fn from_raw(value: String) -> Option<Self>;
 }
 
 impl Session {
-    fn new(s: Box<SessionStore>) -> Self {
+    pub fn new(s: Box<SessionStore>) -> Self {
         Session {
             inner: s,
-            has_changed: false,
+        }
+    }
+
+    pub fn set<T: SessionValue>(&mut self, value: T) {
+        self.inner.set_raw(T::get_key(), value.into_raw())
+    }
+
+    pub fn get<T: SessionValue>(&self) -> Result<T> {
+        match self.inner.get_raw(T::get_key()).and_then(T::from_raw) {
+            Some(v) => Ok(v),
+            None => Err(RequestError::new(RequestErrorKind::InternalError(RequestInternalErrorKind::SessionsStore))),
         }
     }
 }
@@ -40,12 +56,19 @@ impl Session {
 struct SessionKey;
 impl typemap::Key for SessionKey { type Value = Session; }
 
-// TODO: Use AroundMiddleware
-impl<S: SessionBackend> BeforeMiddleware for SessionsMiddleware<S> {
-    fn before(&self, req: &mut Request) -> IronResult<()> {
-        let s = self.backend.get_store_from_request(req);
-        req.extensions.insert::<SessionKey>(Session::new(Box::new(s)));
-        Ok(())
+impl<S: SessionBackend> AroundMiddleware for SessionsMiddleware<S> {
+    fn around(self, handler: Box<Handler>) -> Box<Handler> {
+        Box::new(move |req: &mut Request| -> IronResult<Response> {
+            match self.backend.get_store_from_request(req) {
+                Ok(s) => {
+                    req.extensions.insert::<SessionKey>(Session::new(Box::new(s)));
+                },
+                Err(e) => {
+                    req.extensions.insert::<RequestError>(e);
+                },
+            };
+            handler.handle(req)
+        })
     }
 }
 
@@ -55,6 +78,6 @@ pub trait SessionReqExt {
 
 impl<'a, 'b>SessionReqExt for Request<'a, 'b> {
     fn get_session(&mut self) -> &mut Session {
-        self.extensions.get_mut::<SessionKey>().expect("Failed to get session")
+        self.extensions.get_mut::<SessionKey>().unwrap()
     }
 }

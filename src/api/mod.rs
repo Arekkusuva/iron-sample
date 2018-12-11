@@ -46,16 +46,16 @@ impl Router {
 
     pub fn get<P, H>(&mut self, path: P, handler: H)
         where P: Into<String>,
-              H: Fn(&mut Request) -> IronResult<Response> + Send + Sync + 'static,
+              H: Handler,
     {
-        self.add_route(path, "GET", move |req: &mut Request| { handler(req) });
+        self.add_route(path, "GET", handler);
     }
 
     pub fn post<P, H>(&mut self, path: P, handler: H)
         where P: Into<String>,
-              H: Fn(&mut Request) -> IronResult<Response> + Send + Sync + 'static,
+              H: Handler,
     {
-        self.add_route(path, "POST", move |req: &mut Request| { handler(req) });
+        self.add_route(path, "POST", handler);
     }
 
 }
