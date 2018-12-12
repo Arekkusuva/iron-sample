@@ -16,6 +16,9 @@ A REST API sample for application with Rust.
     - [ ] SignUp controller
     - [ ] SignIn controller
     - [ ] SignOut controller
+    - [ ] Facebook
 - [ ] Database (PostgreSQL)
     - [ ] Define user model
+- [ ] Errors chaining
+- [ ] Tests
 - [ ] GraphQL version
