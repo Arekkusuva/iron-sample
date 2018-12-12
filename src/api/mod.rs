@@ -13,7 +13,7 @@ mod transport;
 mod utils;
 
 use self::controllers::Engage;
-use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
+use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware, SessionsMiddleware, BearerJWTRedisBackend};
 
 // TODO: Add context.
 /// Router contains endpoints associated with handlers.
@@ -83,8 +83,9 @@ pub fn start_listening(port: i32) {
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
     let logger_middleware = LoggerMiddleware::new(&logger);
     chain.link_before(logger_middleware);
-    chain.link_after(JsonResponseMiddleware::new());
     chain.link_before(ResponseTimeLoggerMiddleware);
+    chain.link_around(SessionsMiddleware::new(BearerJWTRedisBackend::new("redis://localhost")));
+    chain.link_after(JsonResponseMiddleware::new());
     chain.link_after(ResponseTimeLoggerMiddleware);
 
     // Start listening on specific port

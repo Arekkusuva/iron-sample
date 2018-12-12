@@ -1,7 +1,9 @@
 use iron::Handler;
 
-pub mod auth;
+mod auth;
+
+pub use self::auth::AuthWrapper;
 
 pub trait Wrapper {
-    fn wrap(handler: Box<Handler>) -> Box<Handler>;
+    fn wrap<H: Handler>(handler: H) -> Box<Handler>;
 }

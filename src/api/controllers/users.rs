@@ -2,9 +2,10 @@ use iron::prelude::*;
 use iron::status;
 
 use api::transport::prelude::*;
-//use api::middlewares::prelude::*;
+use api::middlewares::prelude::*;
 use api::Router;
-use api::transport::users::{PostUser};
+use api::transport::users::PostUser;
+use api::middlewares::wrappers::AuthWrapper;
 
 fn post_user(req: &mut Request) -> IronResult<Response> {
     let body: PostUser = match req.parse_body() {
@@ -20,5 +21,5 @@ fn get_users(_: &mut Request) -> IronResult<Response> {
 
 pub fn engage(router: &mut Router) {
     router.post("users/new", post_user);
-    router.get("users", get_users);
+    router.get("users", AuthWrapper::wrap(get_users));
 }

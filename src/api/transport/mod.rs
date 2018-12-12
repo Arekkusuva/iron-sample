@@ -23,8 +23,11 @@ pub type Result<T> = StdResult<T, RequestError>;
 pub struct ResponseBody {
     #[serde(skip_serializing)]
     pub resp_status: status::Status,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<Box<Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub internal_code: Option<u8>,
 }
 
