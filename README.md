@@ -1,6 +1,8 @@
-# Rust REST API sample
+# Rust Web API sample
 
-A REST API sample for application with Rust.
+A Web API sample for application with Rust.
+
+Warning: In this sample used custom Router for Iron, but best way is use [iron/router](https://github.com/iron/router).
 
 ## Development
 
