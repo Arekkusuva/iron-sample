@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::AsRef;
 
 use iron::prelude::*;
 use iron::Handler;
@@ -29,15 +30,15 @@ impl Router {
     }
 
     pub fn get_full_path<P, M>(path: P, method: M) -> String
-        where P: Into<String>,
-              M: Into<String>,
+        where P: AsRef<str>,
+              M: AsRef<str>,
     {
-        format!("{}-{}", method.into(), path.into())
+        format!("{}-{}", method.as_ref(), path.as_ref())
     }
 
     fn add_route<P, M, H>(&mut self, path: P, method: M, handler: H)
-        where P: Into<String>,
-              M: Into<String>,
+        where P: AsRef<str>,
+              M: AsRef<str>,
               H: Handler,
     {
         let key = Router::get_full_path(path, method);
@@ -45,14 +46,14 @@ impl Router {
     }
 
     pub fn get<P, H>(&mut self, path: P, handler: H)
-        where P: Into<String>,
+        where P: AsRef<str>,
               H: Handler,
     {
         self.add_route(path, "GET", handler);
     }
 
     pub fn post<P, H>(&mut self, path: P, handler: H)
-        where P: Into<String>,
+        where P: AsRef<str>,
               H: Handler,
     {
         self.add_route(path, "POST", handler);
