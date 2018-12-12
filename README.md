@@ -12,11 +12,11 @@ A REST API sample for application with Rust.
 - [ ] Authentication
     - [x] Iron middleware for sessions
     - [x] Routes wrapper
-    - [ ] JWT Generating
+    - [ ] JWT Generation
     - [ ] SignUp controller
     - [ ] SignIn controller
     - [ ] SignOut controller
-    - [ ] Facebook
+    - [ ] Facebook auth
 - [ ] Database (PostgreSQL)
     - [ ] Define user model
 - [ ] Errors chaining
