@@ -1,18 +1,17 @@
 use iron::prelude::*;
 use iron::Handler;
 
-use api::transport::{RequestError, RequestErrorKind};
-use super::Wrapper;
+use api::transport::RequestError;
 
 pub struct AuthWrapper;
 
-impl Wrapper for AuthWrapper {
-    fn wrap<H: Handler>(handler: H) -> Box<Handler> {
-        Box::new(move |req: &mut Request| {
+impl AuthWrapper {
+    pub fn wrap<H: Handler>(handler: H) -> impl Handler {
+        move |req: &mut Request| {
             match req.extensions.remove::<RequestError>() {
                 Some(e) => Ok(Response::from(e)),
                 None => handler.handle(req),
             }
-        })
+        }
     }
 }

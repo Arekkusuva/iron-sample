@@ -2,7 +2,6 @@ use iron::prelude::*;
 use iron::status;
 
 use api::transport::prelude::*;
-use api::middlewares::prelude::*;
 use api::Router;
 use api::transport::users::PostUser;
 use api::middlewares::wrappers::AuthWrapper;
