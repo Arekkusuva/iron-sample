@@ -19,6 +19,6 @@ fn get_users(_: &mut Request) -> IronResult<Response> {
 }
 
 pub fn engage(router: &mut Router) {
-    router.post("users/new", post_user);
+    router.post("users", post_user);
     router.get("users", AuthWrapper::wrap(get_users));
 }
