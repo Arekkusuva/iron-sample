@@ -4,7 +4,8 @@ use std::convert::AsRef;
 use iron::prelude::*;
 use iron::Handler;
 use iron::status;
-use ijr::{JsonResponseMiddleware};
+use ijr::JsonResponseMiddleware;
+use iron_auth::AuthConfigMiddleware;
 
 use utils::logger::logger_factory;
 
@@ -14,10 +15,9 @@ mod transport;
 mod utils;
 
 use self::controllers::Engage;
-use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware, SessionsMiddleware, BearerJWTRedisBackend};
+use self::middlewares::{LoggerMiddleware, ResponseTimeLoggerMiddleware};
 
 // TODO: Add context.
-/// Router contains endpoints associated with handlers.
 pub struct Router {
     routes: HashMap<String, Box<Handler>>,
 }
@@ -73,22 +73,21 @@ impl Handler for Router {
 const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 pub fn start_listening(port: i32) {
-    // Create root logger
     let logger = logger_factory();
 
-    // Create router
     let router= Router::new().engage();
     let mut chain = Chain::new(router);
 
-    // Link middlewares
     chain.link_before(persistent::Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
     let logger_middleware = LoggerMiddleware::new(&logger);
     chain.link_before(logger_middleware);
     chain.link_before(ResponseTimeLoggerMiddleware);
-    chain.link_around(SessionsMiddleware::new(BearerJWTRedisBackend::new("redis://localhost")));
+    chain.link_before(AuthConfigMiddleware::new(
+        "secret".to_string(),
+        "redis://localhost",
+    ));
     chain.link_after(JsonResponseMiddleware::new());
     chain.link_after(ResponseTimeLoggerMiddleware);
 
-    // Start listening on specific port
     Iron::new(chain).http(format!("localhost:{}", port)).expect("http");
 }

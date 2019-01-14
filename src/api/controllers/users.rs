@@ -1,10 +1,10 @@
 use iron::prelude::*;
 use iron::status;
+use iron_auth::AuthWrapper;
 
 use api::transport::prelude::*;
 use api::Router;
 use api::transport::users::PostUser;
-use api::middlewares::wrappers::AuthWrapper;
 
 fn post_user(req: &mut Request) -> IronResult<Response> {
     let body: PostUser = match req.parse_body() {

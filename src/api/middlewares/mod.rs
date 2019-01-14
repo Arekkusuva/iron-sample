@@ -1,5 +1,4 @@
 pub mod prelude;
-pub mod wrappers;
 
 mod logger;
 mod response_time_logger;
