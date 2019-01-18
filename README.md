@@ -1,6 +1,7 @@
-# Rust Web API sample
+Iron sample
+============
 
-A Web API sample for application with Rust.
+> Sample project with the [Iron](https://github.com/iron/iron) web framework.
 
 Warning: In this sample used custom Router for Iron, but best way is use [iron/router](https://github.com/iron/router).
 

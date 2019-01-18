@@ -253,7 +253,7 @@ dependencies = [
 [[package]]
 name = "iron-auth"
 version = "0.1.0"
-source = "git+https://github.com/Arekkusuva/iron-auth#89c3d3ef27f2c9b75d4877e12628d6e08a0cf867"
+source = "git+https://github.com/Arekkusuva/iron-auth#def129dfd237a12ce0707bd9d924a1e8acd51cb3"
 dependencies = [
  "error-chain 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "iron 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",

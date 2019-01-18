@@ -1,6 +1,7 @@
 use iron::prelude::*;
 use iron::status;
 use iron_auth::AuthWrapper;
+use iron_auth::AuthReqExt;
 
 use api::transport::prelude::*;
 use api::Router;
@@ -14,7 +15,9 @@ fn post_user(req: &mut Request) -> IronResult<Response> {
     Ok(Response::with((status::Ok, body.email)))
 }
 
-fn get_users(_: &mut Request) -> IronResult<Response> {
+fn get_users(req: &mut Request) -> IronResult<Response> {
+    let s = req.session();
+    println!("{:?}", s);
     Ok(Response::with((status::Ok, "get users")))
 }
 
